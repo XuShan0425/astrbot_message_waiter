@@ -1,52 +1,57 @@
 {
   "enabled": {
-    "description": "Enable message waiting",
+    "description": "启用消息等待与合并",
     "type": "bool",
-    "default": true
+    "default": true,
+    "hint": "关闭后插件不再延迟 AstrBot 的 AI 回复。"
   },
   "wait_seconds": {
-    "description": "Silence time before replying (seconds)",
+    "description": "静默等待时间（秒）",
     "type": "float",
     "default": 2.5,
-    "hint": "Each new message resets this timer. Consecutive messages are merged with line breaks."
+    "hint": "收到同一用户的新消息后会重新计时；连续消息将使用换行符合并。"
   },
   "max_wait_seconds": {
-    "description": "Maximum semantic extension time (seconds)",
+    "description": "语义判断后的最大总等待时间（秒）",
     "type": "float",
     "default": 10.0,
-    "hint": "Only used when semantic checking decides that the message is incomplete."
+    "hint": "仅在启用语义完整性判断且模型认为消息未完成时生效。"
   },
   "ignore_commands": {
-    "description": "Do not delay command messages",
+    "description": "命令消息不参与等待",
     "type": "bool",
-    "default": true
+    "default": true,
+    "hint": "建议保持开启，避免 /help 等指令响应变慢。"
   },
   "command_prefixes": {
-    "description": "Command prefixes that bypass waiting",
+    "description": "直接放行的命令前缀",
     "type": "list",
-    "default": ["/", "!"]
+    "default": ["/", "!"],
+    "hint": "以列表中任一前缀开头的消息不会被延迟或合并。"
   },
   "semantic_check": {
-    "description": "Use an LLM to judge whether the message is complete",
+    "description": "使用大语言模型判断消息是否完整",
     "type": "bool",
     "default": false,
-    "hint": "Disabled by default to avoid an extra model request for every user turn."
+    "hint": "默认关闭。开启后每轮可能增加一次模型请求、Token 消耗和响应延迟。"
   },
   "semantic_provider_id": {
-    "description": "Provider used for semantic checking",
+    "description": "用于语义完整性判断的模型提供商",
     "type": "string",
     "default": "",
     "_special": "select_provider",
-    "hint": "Leave empty to use the current conversation provider."
+    "hint": "留空时使用当前会话正在使用的聊天模型提供商。"
   },
   "semantic_min_chars": {
-    "description": "Minimum text length for semantic checking",
+    "description": "触发语义判断的最少字符数",
     "type": "int",
-    "default": 6
+    "default": 6,
+    "hint": "短于此长度的消息只进行固定时长等待，不调用模型判断。"
   },
   "semantic_extend_seconds": {
-    "description": "Extra wait after an incomplete result (seconds)",
+    "description": "消息不完整时追加等待时间（秒）",
     "type": "float",
-    "default": 2.0
+    "default": 2.0,
+    "hint": "追加等待不会使总等待时间超过上面的最大总等待时间。"
   }
 }

@@ -1,5 +1,8 @@
 name: message_waiter
-desc: Wait for consecutive user messages and merge them before invoking AstrBot AI.
+display_name: 消息等待与合并
+short_desc: 等待用户连续输入结束后，再将多段文本合并交给 AI 回复。
+desc: 在用户停止发送消息后再调用 AstrBot AI，并支持合并连续文本和可选的语义完整性判断。
 author: Tong
 version: 0.1.0
 repo: https://github.com/XuShan0425/astrbot_message_waiter
+astrbot_version: ">=4.16,<5"
