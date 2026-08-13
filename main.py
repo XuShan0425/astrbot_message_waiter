@@ -4,24 +4,7 @@ from dataclasses import dataclass, field
 
 from astrbot.api import AstrBotConfig, logger
 from astrbot.api.event import AstrMessageEvent, filter
-from astrbot.api.event.filter import CustomFilter
 from astrbot.api.star import Context, Star, register
-
-
-class WakeMessageFilter(CustomFilter):
-    """Allow the handler only for messages that already woke AstrBot."""
-
-    def filter(self, event: AstrMessageEvent, cfg: AstrBotConfig) -> bool:
-        """Check whether AstrBot would normally process the message.
-
-        Args:
-            event: Incoming AstrBot message event.
-            cfg: Active AstrBot configuration.
-
-        Returns:
-            ``True`` when the message is a private message, mention, or wake command.
-        """
-        return event.is_at_or_wake_command
 
 
 @dataclass
@@ -57,19 +40,24 @@ class MessageWaiter(Star):
         self._closed = False
 
     @filter.event_message_type(filter.EventMessageType.ALL, priority=99999)
-    @filter.custom_filter(WakeMessageFilter)
     async def wait_for_more_messages(self, event: AstrMessageEvent) -> None:
         """Buffer a normal AI message and let only the newest event continue.
 
         Args:
             event: Incoming AstrBot message event.
         """
+        text = event.get_message_str().strip()
+        session_key = event.unified_msg_origin
+        if event.is_group_chat():
+            session_key = f"{session_key}:{event.get_sender_id()}"
+
+        pending = self._pending.get(session_key)
         if self._closed or not self.config.get("enabled", True):
             return
         if event.get_extra("provider_request"):
             return
-
-        text = event.get_message_str().strip()
+        if not event.is_at_or_wake_command and pending is None:
+            return
         if not text:
             return
         if self.config.get("ignore_commands", True):
@@ -77,11 +65,9 @@ class MessageWaiter(Star):
             if any(text.startswith(str(prefix)) for prefix in prefixes if prefix):
                 return
 
-        session_key = event.unified_msg_origin
-        if event.is_group_chat():
-            session_key = f"{session_key}:{event.get_sender_id()}"
-
-        pending = self._pending.setdefault(session_key, PendingMessage())
+        if pending is None:
+            pending = PendingMessage()
+            self._pending[session_key] = pending
         async with pending.lock:
             pending.generation += 1
             generation = pending.generation
@@ -177,6 +163,10 @@ class MessageWaiter(Star):
                 combined = "\n".join(pending.texts).strip()
                 event.message_str = combined
                 event.message_obj.message_str = combined
+                # A group follow-up may not mention the bot. The first buffered
+                # event did, so the final merged event may continue to the AI.
+                event.is_wake = True
+                event.is_at_or_wake_command = True
                 self._pending.pop(session_key, None)
                 logger.debug(
                     "Released %s buffered message part(s) for session %s.",
