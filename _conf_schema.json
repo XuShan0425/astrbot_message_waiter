@@ -1,0 +1,52 @@
+{
+  "enabled": {
+    "description": "Enable message waiting",
+    "type": "bool",
+    "default": true
+  },
+  "wait_seconds": {
+    "description": "Silence time before replying (seconds)",
+    "type": "float",
+    "default": 2.5,
+    "hint": "Each new message resets this timer. Consecutive messages are merged with line breaks."
+  },
+  "max_wait_seconds": {
+    "description": "Maximum semantic extension time (seconds)",
+    "type": "float",
+    "default": 10.0,
+    "hint": "Only used when semantic checking decides that the message is incomplete."
+  },
+  "ignore_commands": {
+    "description": "Do not delay command messages",
+    "type": "bool",
+    "default": true
+  },
+  "command_prefixes": {
+    "description": "Command prefixes that bypass waiting",
+    "type": "list",
+    "default": ["/", "!"]
+  },
+  "semantic_check": {
+    "description": "Use an LLM to judge whether the message is complete",
+    "type": "bool",
+    "default": false,
+    "hint": "Disabled by default to avoid an extra model request for every user turn."
+  },
+  "semantic_provider_id": {
+    "description": "Provider used for semantic checking",
+    "type": "string",
+    "default": "",
+    "_special": "select_provider",
+    "hint": "Leave empty to use the current conversation provider."
+  },
+  "semantic_min_chars": {
+    "description": "Minimum text length for semantic checking",
+    "type": "int",
+    "default": 6
+  },
+  "semantic_extend_seconds": {
+    "description": "Extra wait after an incomplete result (seconds)",
+    "type": "float",
+    "default": 2.0
+  }
+}

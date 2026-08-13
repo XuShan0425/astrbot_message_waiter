@@ -1,0 +1,5 @@
+name: message_waiter
+desc: Wait for consecutive user messages and merge them before invoking AstrBot AI.
+author: Tong
+version: 0.1.0
+repo: https://github.com/XuShan0425/astrbot_message_waiter
